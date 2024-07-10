@@ -1,47 +1,63 @@
 const express = require('express');
 const { ServerConfig } = require('./config');
 const apiRoutes = require('./routes');
-const {DbConfig} = require('./config')
+const { DbConfig } = require('./config');
+const { TweetRepository, HashtagRepository } = require('./repositories');
 const app = express();
-const {TweetRepository,HashtagRepository} = require('./repositories')
+
 const tweetRepository = new TweetRepository();
 const hashtagRepository = new HashtagRepository();
 
-app.use(express.json());   //help to parse the incoming request body 
-app.use(express.urlencoded({extended:true}));  
+// Middleware to parse the incoming request body
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+// API Routes
 app.use('/api', apiRoutes);
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+});
+
+// Start the server and connect to the database
 app.listen(ServerConfig.PORT, async () => {
-    console.log(`Successfully started the server on PORT : ${ServerConfig.PORT}`);
-    await DbConfig.connectDb()
-    console.log('mongo is connected');
+    try {
+        console.log(`Successfully started the server on PORT: ${ServerConfig.PORT}`);
+        await DbConfig.connectDb();
+        console.log('MongoDB is connected');
+    } catch (error) {
+        console.error('Error starting server:', error);
+    }
 
-    //create tweet/hashtag 
+    // Uncomment and use the following CRUD operations as needed
 
+    // Create tweet
     // const response = await tweetRepository.create({
-    //     content:'new tweet',
-    //     likes:100,
-    //     noOfRetweets:1,
-    //     comment:"ad"
-    // })
- 
-    // const response = await hashtagRepository.create({
-    //     text:'travel',
-    //     tweets:['666d201c14f869ee0427135b']
-    // })
+    //     content: 'new tweet',
+    //     likes: 100,
+    //     noOfRetweets: 1,
+    //     comment: 'ad'
+    // });
+    // console.log(response);
 
-    //get all tweets/hashtag
+    // Create hashtag
+    // const response = await hashtagRepository.create({
+    //     text: 'travel',
+    //     tweets: ['666d201c14f869ee0427135b']
+    // });
+    // console.log(response);
+
+    // Get all tweets
     // const response = await tweetRepository.get();
     // console.log(response);
 
-    //get by id
+    // Get tweet by id
     // const response = await tweetRepository.get('666d2496216238052da86e97');
-    //  console.log(response);
+    // console.log(response);
 
-    //deleteByid
+    // Delete tweet by id
     // const response = await tweetRepository.delete('666d2496216238052da86e97');
-    //  console.log(response);
-
-    
+    // console.log(response);
 });
